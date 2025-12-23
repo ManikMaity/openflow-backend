@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  redis:
+  openflow-redis:
     image: redis:7-alpine
     container_name: openflow-redis
     command: >

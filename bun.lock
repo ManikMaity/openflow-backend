@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "rbac",
+      "name": "openflow",
       "dependencies": {
         "@types/compression": "^1.8.1",
         "@types/cors": "^2.8.19",

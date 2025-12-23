@@ -1,15 +1,28 @@
-# rbac
+# openflow - backend
 
-To install dependencies:
+An automation backend inspired by n8n.
+
+## Installation
 
 ```bash
 bun install
 ```
 
-To run:
+## Running
 
 ```bash
-bun run index.ts
+# Start Redis
+docker-compose up -d
+
+# Development
+bun run dev
+
+# Production
+bun run start
 ```
 
-This project was created using `bun init` in bun v1.3.2. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+## Type Checking
+
+```bash
+bun run typecheck
+```
