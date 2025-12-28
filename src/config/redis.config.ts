@@ -1,5 +1,5 @@
 import Redis from "ioredis";
-import { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT } from "./server.config";
+import { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_USERNAME } from "./server.config";
 import { logger } from "./logger.config";
 
 let redis: Redis | null = null;
@@ -10,7 +10,8 @@ export const connectRedis = async (): Promise<Redis> => {
         if (!redis) {
             redis = new Redis({
                 host: REDIS_HOST,
-                port: Number(REDIS_PORT),
+                port: REDIS_PORT,
+                username : REDIS_USERNAME,
                 password: REDIS_PASSWORD,
                 retryStrategy: (times) => Math.min(times * 1000, 3000)
             });
