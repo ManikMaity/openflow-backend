@@ -1,46 +1,57 @@
 import Redis from "ioredis";
-import { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_USERNAME } from "./server.config";
+import { NODE_ENV, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_USERNAME } from "./server.config";
 import { logger } from "./logger.config";
 
-let redis: Redis | null = null;
 
+let redis: Redis | null = null;
+let connectingPromise: Promise<Redis> | null = null; // ensure single connect
+
+
+function makeRedisUrl(): string {
+    let url = `redis://${REDIS_USERNAME}:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}`
+    if (NODE_ENV === "production") {
+        url = `rediss://${REDIS_USERNAME}:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}`;
+    }
+    console.log("Redis URL:", url);
+    return url;
+}
 
 export const connectRedis = async (): Promise<Redis> => {
-    try {
-        if (!redis) {
-            redis = new Redis({
-                host: REDIS_HOST,
-                port: REDIS_PORT,
-                username : REDIS_USERNAME,
-                password: REDIS_PASSWORD,
-                retryStrategy: (times) => Math.min(times * 1000, 3000)
-            });
+  if (redis) return redis; // already connected
+  if (connectingPromise) return connectingPromise; // connection in progress
 
-            redis.on("connect", () => {
-                logger.info("✅ Redis is connected successfully");
-            });
+  redis = new Redis(makeRedisUrl(), {
+    lazyConnect: true,
+    maxRetriesPerRequest: 3,
+    reconnectOnError: (err) => {
+      logger.error("❌ Redis reconnect error:", err.message);
+      return true;
+    },
+  });
 
-            redis.on("error", (err) => {
-                logger.error("❌ Redis connection error:", err.message);
-            });
-        }
+  redis.once("ready", () => {
+    logger.info("✅ Redis is ready and fully connected");
+  });
 
-        // Ensure Redis is actually reachable
-        const pong = await redis.ping();
-        logger.info(`✅ Redis ping response: ${pong}`);
+  redis.on("error", (err) => {
+    logger.error("❌ Redis connection error:", err.message);
+  });
 
-        return redis;
-    } catch (err) {
-        if (err instanceof Error) {
-            logger.error("❌ Redis connection failed:", err.message);
-        }
-        process.exit(1);
-    }
+  connectingPromise = redis.connect()
+    .then(() => {
+      connectingPromise = null; // reset after successful connect
+      return redis!;
+    })
+    .catch((err) => {
+      connectingPromise = null;
+      logger.error("❌ Failed to connect to Redis:", err);
+      process.exit(1);
+    });
+
+  return connectingPromise;
 };
 
 export const redisInstance = (): Redis => {
-    if (!redis) {
-        throw new Error("Redis not initialized. Call connectRedis() first.");
-    }
-    return redis;
+  if (!redis) throw new Error("Redis not initialized. Call connectRedis() first.");
+  return redis;
 };
