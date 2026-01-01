@@ -1,12 +1,8 @@
-import express from "express";
-import { healthCheck } from "./health";
+import express from 'express';
+import healthRouter from './health.route';
 
 const router = express.Router();
 
-router.get("/", (_req, res) => {
-  res.status(200).json({ message: "API is working" });
-});
-
-router.get("/health", healthCheck);
+router.use('/health', healthRouter);
 
 export default router;

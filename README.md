@@ -2,8 +2,10 @@
 
 An automation backend inspired by n8n.
 
-## Design 
+## Design
+
 - [diagram](https://app.eraser.io/workspace/9LgGN051ixcFR08BG5QW?origin=share&elements=h-4qMM-x8P3Q_z3F3ExSFg)
+
 ## Installation
 
 ```bash
@@ -28,4 +30,3 @@ bun run start
 ```bash
 bun run typecheck
 ```
- 

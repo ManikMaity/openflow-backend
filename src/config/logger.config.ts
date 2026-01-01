@@ -1,7 +1,7 @@
-import winston from "winston";
+import winston from 'winston';
 
 export const logger = winston.createLogger({
-  level: Bun.env.NODE_ENV === "production" ? "info" : "debug",
+  level: Bun.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),

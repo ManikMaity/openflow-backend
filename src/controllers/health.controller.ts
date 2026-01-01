@@ -1,34 +1,32 @@
-import { Request, Response } from "express";
-import { redisInstance } from "../../config/redis.config";
-import { logger } from "../../config/logger.config";
-import { NODE_ENV } from "../../config/server.config";
-import httpStatus from "http-status";
+import { Request, Response } from 'express';
+import { logger } from '../config/logger.config';
+import httpStatus from 'http-status';
+import { redisInstance } from '../config/redis.config';
+import { NODE_ENV } from '../config/server.config';
 
-export const healthCheck = async (req: Request, res: Response) => {
+export async function serverHealthCheckController(req: Request, res: Response) {
   const startTime = Date.now();
-
   try {
-    // Check Redis connection
-    let redisStatus = "disconnected";
+    let redisStatus = 'disconnected';
     let redisResponseTime = 0;
 
     if (redisInstance()) {
       const redisStart = Date.now();
       try {
         await redisInstance().ping();
-        redisStatus = "connected";
+        redisStatus = 'connected';
         redisResponseTime = Date.now() - redisStart;
       } catch (error) {
-        redisStatus = "error";
-        logger.error("Redis health check failed:", error);
+        redisStatus = 'error';
+        logger.error('Redis health check failed:', error);
       }
     }
 
     const responseTime = Date.now() - startTime;
-    const isHealthy = redisStatus === "connected";
+    const isHealthy = redisStatus === 'connected';
 
     const healthData = {
-      status: isHealthy ? "healthy" : "unhealthy",
+      status: isHealthy ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       responseTime: `${responseTime}ms`,
@@ -39,7 +37,7 @@ export const healthCheck = async (req: Request, res: Response) => {
           responseTime: redisResponseTime ? `${redisResponseTime}ms` : null,
         },
         server: {
-          status: "running",
+          status: 'running',
           version: process.version,
           memory: {
             used: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`,
@@ -49,22 +47,20 @@ export const healthCheck = async (req: Request, res: Response) => {
       },
     };
 
-    const statusCode = isHealthy
-      ? httpStatus.OK
-      : httpStatus.SERVICE_UNAVAILABLE;
+    const statusCode = isHealthy ? httpStatus.OK : httpStatus.SERVICE_UNAVAILABLE;
 
     res.status(statusCode).json(healthData);
   } catch (error) {
-    logger.error("Health check failed:", error);
+    logger.error('Health check failed:', error);
 
     res.status(httpStatus.SERVICE_UNAVAILABLE).json({
-      status: "unhealthy",
+      status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      error: "Health check failed",
+      error: 'Health check failed',
       services: {
-        redis: { status: "error" },
-        server: { status: "error" },
+        redis: { status: 'error' },
+        server: { status: 'error' },
       },
     });
   }
-};
+}
