@@ -1,9 +1,12 @@
-import express from 'express'
+import express from "express";
+import { healthCheck } from "./health";
 
-const router = express.Router()
+const router = express.Router();
 
-router.get('/', (req, res) => {
-    res.status(200).json({ message: 'API is working' })
-})
+router.get("/", (_req, res) => {
+  res.status(200).json({ message: "API is working" });
+});
 
-export default router
+router.get("/health", healthCheck);
+
+export default router;

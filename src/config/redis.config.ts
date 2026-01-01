@@ -1,19 +1,26 @@
 import Redis from "ioredis";
-import { NODE_ENV, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_USERNAME } from "./server.config";
+import {
+  NODE_ENV,
+  REDIS_HOST,
+  REDIS_PASSWORD,
+  REDIS_PORT,
+  REDIS_USERNAME,
+} from "./server.config";
 import { logger } from "./logger.config";
-
 
 let redis: Redis | null = null;
 let connectingPromise: Promise<Redis> | null = null; // ensure single connect
 
-
 function makeRedisUrl(): string {
-    let url = `redis://${REDIS_USERNAME}:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}`
-    if (NODE_ENV === "production") {
-        url = `rediss://${REDIS_USERNAME}:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}`;
-    }
-    console.log("Redis URL:", url);
-    return url;
+  let url = `redis://${REDIS_USERNAME}:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}`;
+  if (NODE_ENV === "production") {
+    url = `rediss://${REDIS_USERNAME}:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}`;
+  }
+  // Don't log Redis URL in production to avoid exposing credentials
+  if (NODE_ENV !== "production") {
+    logger.debug("Redis connection configured");
+  }
+  return url;
 }
 
 export const connectRedis = async (): Promise<Redis> => {
@@ -37,7 +44,8 @@ export const connectRedis = async (): Promise<Redis> => {
     logger.error("❌ Redis connection error:", err.message);
   });
 
-  connectingPromise = redis.connect()
+  connectingPromise = redis
+    .connect()
     .then(() => {
       connectingPromise = null; // reset after successful connect
       return redis!;
@@ -52,6 +60,7 @@ export const connectRedis = async (): Promise<Redis> => {
 };
 
 export const redisInstance = (): Redis => {
-  if (!redis) throw new Error("Redis not initialized. Call connectRedis() first.");
+  if (!redis)
+    throw new Error("Redis not initialized. Call connectRedis() first.");
   return redis;
 };
