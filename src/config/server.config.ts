@@ -6,3 +6,4 @@ export const REDIS_PASSWORD = Bun.env.REDIS_PASSWORD;
 export const REDIS_HOST = Bun.env.REDIS_HOST || 'localhost';
 export const REDIS_PORT = Number(Bun.env.REDIS_PORT) || 6379;
 export const REDIS_USERNAME = Bun.env.REDIS_USERNAME || 'default';
+export const DB_URL = Bun.env.DB_URL;

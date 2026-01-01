@@ -1,12 +1,23 @@
-version: '3.9'
-
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: openflow-postgres
+    environment:
+      POSTGRES_DB: openflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
   openflow-redis:
     image: redis:7-alpine
     container_name: openflow-redis
     command: >
       redis-server
-      --requirepass ${REDIS_PASSWORD}
+      --requirepass redis123
       --appendonly yes
     ports:
       - '6379:6379'
@@ -15,4 +26,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  postgres_data:
   redis_data:

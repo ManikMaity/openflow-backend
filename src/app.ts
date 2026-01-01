@@ -26,13 +26,10 @@ app.use('/api/v1', router);
 
 // Unhandled routes
 app.use((req, res, next) => {
-  next(
-    new ApiError(
-      httpStatus.NOT_FOUND,
-      ERROR_CODES_MAP.ROUTE_NOT_FOUND.message,
-      ERROR_CODE_MESSAGES.ROUTE_NOT_FOUND,
-      true,
-    ),
+  new ApiError(
+    ERROR_CODES_MAP[ERROR_CODE_MESSAGES.ROUTE_NOT_FOUND].status,
+    `Route ${req.originalUrl} not found`,
+    ERROR_CODE_MESSAGES.ROUTE_NOT_FOUND,
   );
 });
 

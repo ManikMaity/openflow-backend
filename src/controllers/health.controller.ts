@@ -3,12 +3,17 @@ import { logger } from '../config/logger.config';
 import httpStatus from 'http-status';
 import { redisInstance } from '../config/redis.config';
 import { NODE_ENV } from '../config/server.config';
+import { dbInstance } from '../config/db.config';
+import { sql } from 'drizzle-orm';
 
 export async function serverHealthCheckController(req: Request, res: Response) {
   const startTime = Date.now();
   try {
     let redisStatus = 'disconnected';
     let redisResponseTime = 0;
+    let dbStatus = 'disconnected';
+    let dbResponseTime = 0;
+    const db = dbInstance();
 
     if (redisInstance()) {
       const redisStart = Date.now();
@@ -22,8 +27,20 @@ export async function serverHealthCheckController(req: Request, res: Response) {
       }
     }
 
+    if (db) {
+      const dbStart = Date.now();
+      try {
+        await db.execute(sql`SELECT 1`);
+        dbStatus = 'connected';
+        dbResponseTime = Date.now() - dbStart;
+      } catch (error) {
+        dbStatus = 'error';
+        logger.error('Database health check failed:', error);
+      }
+    }
+
     const responseTime = Date.now() - startTime;
-    const isHealthy = redisStatus === 'connected';
+    const isHealthy = redisStatus === 'connected' && dbStatus === 'connected';
 
     const healthData = {
       status: isHealthy ? 'healthy' : 'unhealthy',
@@ -35,6 +52,10 @@ export async function serverHealthCheckController(req: Request, res: Response) {
         redis: {
           status: redisStatus,
           responseTime: redisResponseTime ? `${redisResponseTime}ms` : null,
+        },
+        database: {
+          status: dbStatus,
+          responseTime: dbResponseTime ? `${dbResponseTime}ms` : null,
         },
         server: {
           status: 'running',

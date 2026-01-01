@@ -1,4 +1,5 @@
 import app from './app';
+import { connectDatabase, closeDatabase } from './config/db.config';
 import { logger } from './config/logger.config';
 import { connectRedis } from './config/redis.config';
 import { BACKEND_URL, PORT } from './config/server.config';
@@ -12,9 +13,8 @@ process.on('uncaughtException', (error) => {
 
 (async () => {
   try {
-    // Connect to Redis first
     await connectRedis();
-
+    await connectDatabase();
     // Start Express server
     const server = app.listen(PORT, () => {
       logger.info(`🔥 Server running on ${BACKEND_URL}`);
@@ -32,6 +32,14 @@ process.on('uncaughtException', (error) => {
     // Graceful shutdown handler
     const shutdown = (signal: string) => {
       logger.info(`🛑 ${signal} received. Shutting down gracefully...`);
+      closeDatabase().then(() => logger.info('✅ Database connection closed'));
+      connectRedis()
+        .then((redis) => redis.quit())
+        .then(() => logger.info('✅ Redis connection closed'))
+        .catch((err) => logger.error('❌ Error closing Redis connection:', err))
+        .finally(() => {
+          logger.info('✅ Cleanup completed. Exiting now.');
+        });
       server.close((err) => {
         if (err) {
           logger.error('Error during server shutdown:', err);
