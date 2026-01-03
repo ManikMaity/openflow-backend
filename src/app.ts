@@ -5,10 +5,10 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import router from './routes/v1';
-import { errorCoverter, errorHandler } from './middlewares/error.middleware';
 import { ApiError, ERROR_CODES_MAP } from './utils/error.util';
 import httpStatus from 'http-status';
 import { ERROR_CODE_MESSAGES } from './types';
+import { errorHandler } from './middlewares/error.middleware';
 
 const app = express();
 
@@ -26,15 +26,16 @@ app.use('/api/v1', router);
 
 // Unhandled routes
 app.use((req, res, next) => {
-  new ApiError(
-    ERROR_CODES_MAP[ERROR_CODE_MESSAGES.ROUTE_NOT_FOUND].status,
-    `Route ${req.originalUrl} not found`,
-    ERROR_CODE_MESSAGES.ROUTE_NOT_FOUND,
+  next(
+    new ApiError(
+      ERROR_CODES_MAP[ERROR_CODE_MESSAGES.ROUTE_NOT_FOUND].status,
+      `Route ${req.originalUrl} not found`,
+      ERROR_CODE_MESSAGES.ROUTE_NOT_FOUND,
+    ),
   );
 });
 
-// Globbal  Error handling
-app.use(errorCoverter);
+// Error handling middleware
 app.use(errorHandler);
 
 export default app;

@@ -5,12 +5,6 @@ import { connectRedis } from './config/redis.config';
 import { BACKEND_URL, PORT } from './config/server.config';
 import { ApiError } from './utils/error.util';
 
-// Handle uncaught exceptions after imports are loaded
-process.on('uncaughtException', (error) => {
-  logger.error('❌ UNCAUGHT EXCEPTION:', error);
-  process.exit(1);
-});
-
 (async () => {
   try {
     await connectRedis();

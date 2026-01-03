@@ -19,12 +19,11 @@ export class ApiError extends Error {
     this.statusCode = statusCode;
     this.code = code;
     this.isOperational = isOperational;
-    Error.captureStackTrace(this, this.constructor);
   }
 
   toJSON() {
     return {
-      status: this.statusCode < 500 ? 'fail' : 'error',
+      success: false,
       message: this.message,
       code: this.code,
     };

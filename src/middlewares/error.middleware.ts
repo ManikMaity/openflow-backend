@@ -1,36 +1,22 @@
 import { ErrorRequestHandler } from 'express';
 import httpStatus from 'http-status';
-import { ApiError } from '../utils/error.util';
+import { ApiError, ERROR_CODES_MAP } from '../utils/error.util';
 import { ERROR_CODE_MESSAGES } from '../types';
 import { NODE_ENV } from '../config/server.config';
 import { logger } from '../config/logger.config';
 
-export const errorCoverter: ErrorRequestHandler = (err, req, res, next) => {
-  let error = err;
-  if (!(error instanceof ApiError)) {
-    const statusCode: number = error.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
-    const message: string = error.message || (httpStatus as Record<number, string>)[statusCode];
-    error = new ApiError(statusCode, message, ERROR_CODE_MESSAGES.INTERNAL_SERVER_ERROR, false);
-  }
-  next(error);
-};
-
-export const errorHandler: ErrorRequestHandler = (err: ApiError, _req, res) => {
-  let { statusCode, message, code } = err;
-
-  if (NODE_ENV === 'production' && !err.isOperational) {
-    statusCode = httpStatus.INTERNAL_SERVER_ERROR;
-    message = httpStatus[httpStatus.INTERNAL_SERVER_ERROR];
-    code = ERROR_CODE_MESSAGES.INTERNAL_SERVER_ERROR;
-  }
-
+export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   if (NODE_ENV === 'development') {
-    if (err.isOperational) {
-      logger.error(`OPERATIONAL ERROR - ${err.message}`);
-    } else {
-      logger.warn('NON-OPERATIONAL ERROR', err);
-    }
+    logger.error(err?.message);
   }
 
-  res.status(statusCode).json(err.toJSON());
+  if (err instanceof ApiError) {
+    return res.status(err.statusCode).json(err.toJSON());
+  }
+  const errorData = ERROR_CODES_MAP.INTERNAL_SERVER_ERROR;
+  const statusCode = err.statusCode || errorData?.status || httpStatus.INTERNAL_SERVER_ERROR;
+  const message = err.message || errorData?.message || 'Internal server error';
+
+  const error = new ApiError(statusCode, message, ERROR_CODE_MESSAGES.INTERNAL_SERVER_ERROR, false);
+  return res.status(error.statusCode).json(error.toJSON());
 };
