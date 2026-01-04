@@ -6,10 +6,11 @@ const blockedEmailDomains = [
   'disposablemail.com',
   'mailinator.com',
   'guerrillamail.com',
+  'yopmail.com',
 ];
 
 export const passwordSchema = z
-  .string()
+  .string('Password must be a string')
   .min(8, 'Password must be at least 8 characters')
   .regex(/[a-z]/, 'Password must contain a lowercase letter')
   .regex(/[A-Z]/, 'Password must contain an uppercase letter')
@@ -27,6 +28,6 @@ export const emailSchema = z
       return !blockedEmailDomains.includes(domain);
     },
     {
-      message: 'Email domain is not allowed',
+      message: 'This email domain is not allowed',
     },
   );

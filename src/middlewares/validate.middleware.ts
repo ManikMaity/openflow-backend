@@ -4,14 +4,14 @@ import { VALIDATION_TARGETS } from '../types';
 import { ValidationError } from '../utils/error.util';
 
 export function validate(schema: ZodSchema, target: VALIDATION_TARGETS = VALIDATION_TARGETS.BODY) {
-  return (req: Request, _res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     try {
-      const data = req[target];
-      const parsedData = schema.parse(data);
+      const parsedData = await schema.parseAsync(req[target]);
       req[target] = parsedData;
       next();
     } catch (error) {
       let message = 'Invalid request data';
+      console.log(error);
 
       if (error instanceof ZodError) {
         message = error.issues[0]?.message;
