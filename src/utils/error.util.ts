@@ -1,4 +1,5 @@
 import { ERROR_CODE_MESSAGES } from '../types';
+import httpStatus from 'http-status';
 
 export const ERROR_CODES_MAP = {
   [ERROR_CODE_MESSAGES.USER_NOT_FOUND]: { status: 404, message: 'User not found' },
@@ -27,5 +28,15 @@ export class ApiError extends Error {
       message: this.message,
       code: this.code,
     };
+  }
+}
+
+export class ValidationError extends ApiError {
+  constructor(message: string) {
+    super(
+      ERROR_CODES_MAP.VALIDATION_ERROR.status || httpStatus.BAD_REQUEST,
+      message || ERROR_CODES_MAP.VALIDATION_ERROR.message,
+      ERROR_CODE_MESSAGES.VALIDATION_ERROR,
+    );
   }
 }

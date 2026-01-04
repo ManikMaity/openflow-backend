@@ -7,4 +7,8 @@ export enum ERROR_CODE_MESSAGES {
   ROUTE_NOT_FOUND = 'ROUTE_NOT_FOUND',
 }
 
-export const TEST_FORMATTING = 'this should format on save';
+export enum VALIDATION_TARGETS {
+  BODY = 'body',
+  QUERY = 'query',
+  PARAMS = 'params',
+}
