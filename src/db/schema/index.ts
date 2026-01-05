@@ -1,2 +1,2 @@
-export { users } from './user.schema';
-export { refreshTokens } from './refreshToken.schema';
+export * from './user.schema';
+export * from './refreshToken.schema';

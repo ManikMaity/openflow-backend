@@ -5,7 +5,7 @@ import { ERROR_CODES_MAP } from './error.util';
 export class ResponseHandler {
   constructor(private readonly res: Response) {}
 
-  success<T>(data: T, statusCode = 200, message?: string) {
+  success<T>(statusCode = 200, message?: string, data?: T) {
     return this.res.status(statusCode).json({
       success: true,
       data,

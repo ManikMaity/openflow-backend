@@ -1,9 +1,14 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
+import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { DB_URL } from './server.config';
 import { logger } from './logger.config';
+import * as schema from './../db/schema';
+
 let client: ReturnType<typeof postgres> | null = null;
-export let db: ReturnType<typeof drizzle> | null = null;
+export let db: PostgresJsDatabase<typeof schema> | null = null;
+
+export type DB = PostgresJsDatabase<typeof schema>;
+
 export function connectDatabase() {
   if (!client) {
     client = postgres(DB_URL!, {
@@ -11,13 +16,13 @@ export function connectDatabase() {
       idle_timeout: 20,
       connect_timeout: 10,
     });
-    db = drizzle(client);
+    db = drizzle(client, { schema });
   }
   logger.info('✅ Database connected successfully');
   return db;
 }
 
-export function dbInstance() {
+export function dbInstance(): DB {
   if (!db) {
     throw new Error('Database not connected. Call connectDatabase() first.');
   }
